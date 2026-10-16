@@ -69,51 +69,10 @@ export default function App() {
 
   // Apply and persist the selected theme
   useEffect(() => {
-    localStorage.setItem("theme", theme);
-    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem('theme', theme);
+    document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  const toggleTheme = () => {
-    setTheme((previousTheme) => (previousTheme === "light" ? "dark" : "light"));
-  };
-
-  // Fit the regression model whenever the dataset changes.
-  useEffect(() => {
-    if (data.length === 0) {
-      setModel(null);
-      setLoading(false);
-      return;
-    }
-
-    const controller = new AbortController();
-
-    if (data.length === 0) {
-      setModel(null);
-      setLoading(false);
-      return () => controller.abort();
-    }
-
-
-    setLoading(true);
-    setError("");
-
-    fitRegression(data, controller.signal)
-      .then((result) => {
-        setModel(result);
-
-        const predictedValues = result.predictions.map(
-          (point) => point.predicted,
-        );
-
-        const minimum = Math.min(...predictedValues);
-        const maximum = Math.max(...predictedValues);
-
-        setThreshold((current) =>
-          Math.min(maximum, Math.max(minimum, current)),
-        );
-      })
-      .catch((requestError) => {
-        if (requestError.name !== "AbortError") {
   function toggleTheme() {
     setTheme((previousTheme) =>
       previousTheme === 'light' ? 'dark' : 'light'
@@ -122,21 +81,24 @@ export default function App() {
 
   // Fit the regression model whenever the dataset changes
   useEffect(() => {
-    const controller = new AbortController();
-
     if (data.length === 0) {
       setModel(null);
       setLoading(false);
-      return () => controller.abort();
+      setError('');
+      return;
     }
 
-    // A regression line needs at least two distinct x values.
+    // A regression line needs at least two distinct x values
     if (new Set(data.map((point) => point.x)).size < 2) {
       setModel(null);
       setLoading(false);
-      setError('A regression line needs at least two distinct x values.');
-      return () => controller.abort();
+      setError(
+        'A regression line needs at least two distinct x values.'
+      );
+      return;
     }
+
+    const controller = new AbortController();
 
     setLoading(true);
     setError('');
@@ -165,7 +127,9 @@ export default function App() {
           requestError.name !== 'AbortError' &&
           !controller.signal.aborted
         ) {
-          setError(requestError.message);
+          setError(
+            requestError.message || 'Failed to fit the regression model.'
+          );
         }
       })
       .finally(() => {
@@ -211,17 +175,34 @@ export default function App() {
     };
   }, [model, threshold]);
 
+  // Handle dataset upload
   function handleUpload(points, name) {
-    if (!points) {
-      setError(name);
+    if (!Array.isArray(points)) {
+      setError(
+        typeof name === 'string'
+          ? name
+          : 'The uploaded dataset is invalid.'
+      );
+      return;
+    }
+
+    if (
+      points.some(
+        (point) =>
+          !Number.isFinite(point.x) ||
+          !Number.isFinite(point.y)
+      )
+    ) {
+      setError('The dataset contains invalid numeric values.');
       return;
     }
 
     setData(points);
-    setDatasetName(name);
-    setError("");
+    setDatasetName(name || 'Uploaded dataset');
+    setError('');
   }
 
+  // Reset to the default dataset
   function resetDataset() {
     const isDefaultDataset =
       datasetName === 'Study hours · default' &&
@@ -245,6 +226,7 @@ export default function App() {
     setError('');
   }
 
+  // Load sample dataset
   function loadSampleDataset() {
     setData(DEFAULT_DATA);
     setDatasetName('Study hours · default');
@@ -272,8 +254,12 @@ export default function App() {
 
     const updatedData = [...data, { x, y }];
 
-    if (new Set(updatedData.map((point) => point.x)).size < 2) {
-      setError('A regression line needs at least two distinct x values.');
+    if (
+      new Set(updatedData.map((point) => point.x)).size < 2
+    ) {
+      setError(
+        'A regression line needs at least two distinct x values.'
+      );
       return;
     }
 
@@ -294,7 +280,9 @@ export default function App() {
       remaining.length > 0 &&
       new Set(remaining.map((point) => point.x)).size < 2
     ) {
-      setError('A regression line needs at least two distinct x values.');
+      setError(
+        'A regression line needs at least two distinct x values.'
+      );
       return;
     }
 
@@ -304,8 +292,6 @@ export default function App() {
     );
     setError('');
   }
-
-  const observationLabel = `${data.length} ${data.length === 1 ? 'observation' : 'observations'}`;
 
   return (
     <div className="app-shell">
@@ -318,6 +304,7 @@ export default function App() {
           <span className="brand-mark">
             <FlaskConical size={19} strokeWidth={2.1} />
           </span>
+
           <span>
             Regression <b>Playground</b>
           </span>
@@ -340,6 +327,7 @@ export default function App() {
             ) : (
               <Sun size={14} />
             )}
+
             <span>
               {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
             </span>
@@ -350,12 +338,16 @@ export default function App() {
       <main id="top" className="main-content">
         <section className="intro-row">
           <div className="intro-copy">
-            <span className="eyebrow">A HANDS-ON ML EXPLORER</span>
+            <span className="eyebrow">
+              A HANDS-ON ML EXPLORER
+            </span>
+
             <h1>
               Make the line.
               <br />
               <em>Make the call.</em>
             </h1>
+
             <p>
               See how a simple model learns from data, then decide
               what its predictions mean.
@@ -381,15 +373,31 @@ export default function App() {
           </div>
         </section>
 
-        <section className="dataset-bar" aria-label="Dataset controls">
-          <div className="dataset-heading"><span className="eyebrow">YOUR DATA</span><strong>{data.length} observations</strong></div>
-          <DatasetUploader onUpload={handleUpload} onReset={resetDataset} datasetName={datasetName} />
+        <section
+          className="dataset-bar"
+          aria-label="Dataset controls"
+        >
+          <div className="dataset-heading">
+            <span className="eyebrow">YOUR DATA</span>
+            <strong>
+              {data.length}{' '}
+              {data.length === 1 ? 'observation' : 'observations'}
+            </strong>
+          </div>
+
+          <DatasetUploader
+            onUpload={handleUpload}
+            onReset={resetDataset}
+            datasetName={datasetName}
+          />
         </section>
 
         {error && (
           <div className="error-banner" role="alert">
             <AlertCircle size={17} />
+
             <span>{error}</span>
+
             <button
               type="button"
               onClick={() => setError('')}
@@ -440,7 +448,10 @@ export default function App() {
                   <span className="eyebrow">OBSERVATIONS</span>
                   <h2>Shape the data</h2>
                 </div>
-                <span className="point-count">{data.length}</span>
+
+                <span className="point-count">
+                  {data.length}
+                </span>
               </div>
 
               <form
@@ -449,6 +460,7 @@ export default function App() {
               >
                 <label>
                   <span>Hours</span>
+
                   <input
                     aria-label="Study hours"
                     inputMode="decimal"
@@ -462,6 +474,7 @@ export default function App() {
 
                 <label>
                   <span>Marks</span>
+
                   <input
                     aria-label="Exam marks"
                     inputMode="decimal"
@@ -578,9 +591,10 @@ export default function App() {
 
       <footer className="footer">
         <span>Built for curious minds.</span>
+
         <span>
-          Regression Playground <i>·</i> learn by changing one thing at a
-          time
+          Regression Playground <i>·</i> learn by changing one thing
+          at a time
         </span>
       </footer>
     </div>
