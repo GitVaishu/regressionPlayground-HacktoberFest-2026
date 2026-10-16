@@ -87,6 +87,13 @@ export default function App() {
 
     const controller = new AbortController();
 
+    if (data.length === 0) {
+      setModel(null);
+      setLoading(false);
+      return () => controller.abort();
+    }
+
+
     setLoading(true);
     setError("");
 
@@ -297,7 +304,9 @@ export default function App() {
     );
     setError('');
   }
+
   const observationLabel = `${data.length} ${data.length === 1 ? 'observation' : 'observations'}`;
+
   return (
     <div className="app-shell">
       <header className="topbar">

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   CartesianGrid,
+  Cell,
   ComposedChart,
   Legend,
   Line,
@@ -92,12 +93,13 @@ export default function RegressionChart({ data, model, threshold }) {
   }, []);
 
   // Dynamic theme-aware colors for Recharts SVG elements
-  const gridStroke = isDark ? "#334155" : "#e4ebe5";
-  const axisColor = isDark ? "#94a3b8" : "#78877b";
-  const refLineColor = isDark ? "#f87171" : "#dd765b";
-  const fitLineColor = isDark ? "#4ade80" : "#3e765c";
-  const passColor = isDark ? "#4ade80" : "#2f8a68";
-  const failColor = isDark ? "#f87171" : "#dd765b";
+  const gridStroke = isDark ? '#334155' : '#e4ebe5';
+  const axisColor = isDark ? '#94a3b8' : '#78877b';
+  const refLineColor = isDark ? '#f87171' : '#dd765b';
+  const fitLineColor = isDark ? '#4ade80' : '#3e765c';
+  const passColor = isDark ? '#4ade80' : '#2f8a68';
+  const failColor = isDark ? '#f87171' : '#dd765b';
+  const outlierColor = isDark ? '#f87171' : '#dc2626';
 
   const chartData = useMemo(
     () =>
@@ -119,6 +121,8 @@ export default function RegressionChart({ data, model, threshold }) {
     ];
   }, [data, model.intercept, model.slope]);
 
+  const passPoints = useMemo(() => chartData.filter((point) => point.decision === 'PASS'), [chartData]);
+  const failPoints = useMemo(() => chartData.filter((point) => point.decision === 'FAIL'), [chartData]);
   const residualDomain = useMemo(() => {
     const residuals = chartData.map((point) => point.residual);
     const maxAbs = Math.max(1, ...residuals.map(Math.abs));
@@ -206,6 +210,28 @@ export default function RegressionChart({ data, model, threshold }) {
                 fontSize: 11,
               }}
             />
+            <Scatter data={passPoints} dataKey="actual" name="Predicted PASS" fill={passColor} legendType="circle">
+              {passPoints.map((entry, index) => (
+                <Cell
+                  key={`pass-cell-${index}`}
+                  fill={entry.is_outlier ? outlierColor : passColor}
+                  stroke={entry.is_outlier ? '#991b1b' : 'none'}
+                  strokeWidth={entry.is_outlier ? 2 : 0}
+                  r={entry.is_outlier ? 7 : 4}
+                />
+              ))}
+            </Scatter>
+            <Scatter data={failPoints} dataKey="actual" name="Predicted FAIL" fill={failColor} legendType="circle">
+              {failPoints.map((entry, index) => (
+                <Cell
+                  key={`fail-cell-${index}`}
+                  fill={entry.is_outlier ? outlierColor : failColor}
+                  stroke={entry.is_outlier ? '#991b1b' : 'none'}
+                  strokeWidth={entry.is_outlier ? 2 : 0}
+                  r={entry.is_outlier ? 7 : 4}
+                />
+              ))}
+            </Scatter>
 
             {showResiduals ? (
               <>
