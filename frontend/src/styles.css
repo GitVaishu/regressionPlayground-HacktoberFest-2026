@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap');
 
 :root {
   font-family: 'DM Sans', 'Trebuchet MS', sans-serif;
@@ -103,11 +103,89 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid 
 .add-button { color: #fff; background: var(--green); }
 .add-button:hover { background: var(--green-dark); }
 .point-help { margin: 8px 0 11px; color: #8a968c; font-size: 9px; line-height: 1.45; }
-.points-list { overflow: auto; flex: 1; max-height: 450px; border-top: 1px solid #edf1ec; scrollbar-color: #c6d4c8 transparent; scrollbar-width: thin; }
-.point-row { display: grid; grid-template-columns: 25px 1fr 1.2fr 24px; align-items: center; min-height: 30px; border-bottom: 1px solid #edf1ec; color: #53645a; font: 10px var(--mono); }
-.point-index { color: #a1aca3; font-size: 9px; }
-.point-row small { color: #9aa59c; font: 9px 'DM Sans', sans-serif; }
-.point-mark { text-align: right; }
+
+.points-list {
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+  max-height: 450px;
+  border: 1px solid #e1e9e1;
+  border-radius: 8px;
+  background: #fff;
+  scrollbar-color: #c6d4c8 transparent;
+  scrollbar-width: thin;
+}
+
+.point-row {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) minmax(0, 1.2fr) 32px;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 5px 12px;
+  border-bottom: 1px solid #edf1ec;
+  color: #405548;
+  font: 12px var(--mono);
+  font-variant-numeric: tabular-nums;
+  transition: background-color 150ms ease;
+}
+
+.point-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  min-height: 36px;
+  border-bottom: 1px solid #d8e4d8;
+  color: #536e5b;
+  background: #edf4ec;
+  font: 600 10px 'DM Sans', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.point-row:last-child {
+  border-bottom: none;
+}
+
+.point-row:not(.point-header):hover {
+  background-color: #f1f7f0;
+}
+
+.point-index {
+  color: #849589;
+  font-size: 11px;
+}
+
+.point-row small {
+  color: #829186;
+  font: 11px 'DM Sans', sans-serif;
+}
+
+.point-mark {
+  text-align: right;
+  white-space: nowrap;
+}
+
+@media (max-width: 680px) {
+  .point-row {
+    grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1.2fr) 28px;
+    gap: 6px;
+    min-height: 40px;
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  .point-header {
+    font-size: 9px;
+  }
+
+  .point-index,
+  .point-row small {
+    font-size: 10px;
+  }
+}
+
+
 .remove-button { width: 24px; height: 25px; margin-left: auto; color: #adb7ae; background: transparent; }
 .remove-button:hover { color: #be6049; background: #fff1ec; }
 .loading-line { display: flex; align-items: center; gap: 7px; margin: -4px 0 0 2px; color: #78877b; font-size: 10px; }
