@@ -386,6 +386,48 @@ export default function App() {
               ×
             </button>
           </div>
+          <aside className="data-side-panel">
+            <div className="points-heading"><div><span className="eyebrow">OBSERVATIONS</span><h2>Shape the data</h2></div><span className="point-count">{data.length}</span></div>
+            <form className="add-point-form" onSubmit={addPoint}>
+              <label><span>Hours</span><input aria-label="Study hours" inputMode="decimal" placeholder="e.g. 2.5" value={pointX} onChange={(event) => setPointX(event.target.value)} /></label>
+              <label><span>Marks</span><input aria-label="Exam marks" inputMode="decimal" placeholder="e.g. 58" value={pointY} onChange={(event) => setPointY(event.target.value)} /></label>
+              <button className="icon-button add-button" type="submit" aria-label="Add observation" title="Add observation"><Plus size={18} /></button>
+            </form>
+            <p className="point-help">Add an observation to see how one more student shifts the fit.</p>
+            
+<div className="points-list" aria-label="Dataset observations">
+  <div className="point-row point-header" aria-hidden="true">
+    <span>No.</span>
+    <span>Hours</span>
+    <span className="point-mark">Marks</span>
+    <span></span>
+  </div>
+
+  {[...data].map((point, index) => (
+    <div className="point-row" key={`${point.x}-${index}`}>
+      <span className="point-index">
+        {String(index + 1).padStart(2, '0')}
+      </span>
+      <span>{point.x.toFixed(1)} <small>hrs</small></span>
+      <span className="point-mark">
+        {point.y.toFixed(1)} <small>marks</small>
+      </span>
+      <button
+        className="icon-button remove-button"
+        type="button"
+        onClick={() => removePoint(index)}
+        aria-label={`Remove observation ${index + 1}`}
+        title="Remove observation"
+      >
+        <Trash2 size={14} />
+      </button>
+    </div>
+  ))}
+</div>
+
+              
+          </aside>
+        </div>
         )}
 
         {data.length > 0 ? (
