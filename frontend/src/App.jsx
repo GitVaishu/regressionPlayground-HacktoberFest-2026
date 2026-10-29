@@ -81,10 +81,12 @@ export default function App() {
     if (data.length === 0) {
       setModel(null);
       setLoading(false);
+
+      // Preserve upload validation errors when the dataset is cleared.
       return;
     }
 
-    // A regression line needs at least two distinct x values
+    // A regression line needs at least two distinct x values.
     if (new Set(data.map((point) => point.x)).size < 2) {
       setModel(null);
       setLoading(false);
@@ -139,7 +141,6 @@ export default function App() {
     }
 
     const values = model.predictions.map((point) => point.predicted);
-
     const min = Math.min(...values);
     const max = Math.max(...values);
 
@@ -166,8 +167,6 @@ export default function App() {
   // Handle dataset upload
   function handleUpload(points, name) {
     if (!Array.isArray(points)) {
-      console.log("CSV upload error received:", name);
-
       setData([]);
       setDatasetName("");
       setModel(null);
@@ -185,6 +184,12 @@ export default function App() {
         (point) => !Number.isFinite(point.x) || !Number.isFinite(point.y),
       )
     ) {
+      setData([]);
+      setDatasetName("");
+      setModel(null);
+      setPointX("");
+      setPointY("");
+      setThreshold(40);
       setError("The dataset contains invalid numeric values.");
       return;
     }
@@ -216,6 +221,20 @@ export default function App() {
     setData(DEFAULT_DATA);
     setDatasetName("Study hours · default");
     setError("");
+    setPointX("");
+    setPointY("");
+  }
+
+  // Clear the current dataset
+  function clearDataset() {
+    setData([]);
+    setDatasetName("");
+    setModel(null);
+    setPointX("");
+    setPointY("");
+    setError("");
+    setLoading(false);
+    setThreshold(40);
   }
 
   // Load sample dataset
@@ -223,9 +242,11 @@ export default function App() {
     setData(DEFAULT_DATA);
     setDatasetName("Study hours · default");
     setError("");
+    setPointX("");
+    setPointY("");
   }
 
-  // Add a new observation
+  // Add an observation
   function addPoint(event) {
     event.preventDefault();
 
@@ -347,6 +368,7 @@ export default function App() {
         <section className="dataset-bar" aria-label="Dataset controls">
           <div className="dataset-heading">
             <span className="eyebrow">YOUR DATA</span>
+
             <strong>
               {data.length} {data.length === 1 ? "observation" : "observations"}
             </strong>
@@ -357,6 +379,16 @@ export default function App() {
             onReset={resetDataset}
             datasetName={datasetName}
           />
+
+          <button
+            type="button"
+            className="button button-secondary"
+            onClick={clearDataset}
+            disabled={data.length === 0}
+          >
+            <Trash2 size={16} />
+            Clear Dataset
+          </button>
         </section>
 
         {error && (
@@ -459,6 +491,13 @@ export default function App() {
               </p>
 
               <div className="points-list" aria-label="Dataset observations">
+                <div className="point-row point-header" aria-hidden="true">
+                  <span>No.</span>
+                  <span>Hours</span>
+                  <span className="point-mark">Marks</span>
+                  <span />
+                </div>
+
                 {data.map((point, index) => (
                   <div className="point-row" key={`${point.x}-${index}`}>
                     <span className="point-index">
